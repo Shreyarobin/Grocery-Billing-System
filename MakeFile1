@@ -1,6 +1,0 @@
-Makefile for displayMenu function:
-CC = gcc
-CFLAGS = -Wall -Wextra -std=c99
-
-displayMenu: displayMenu.c
-    $(CC) $(CFLAGS) -o $@ $^
