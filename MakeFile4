@@ -1,6 +1,0 @@
-Makefile for calculateBill function:
-CC = gcc
-CFLAGS = -Wall -Wextra -std=c99
-
-calculateBill: calculateBill.c
-    $(CC) $(CFLAGS) -o $@ $^
