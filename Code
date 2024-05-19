@@ -4,6 +4,7 @@
 
 #define MAX_ITEMS 100
 #define MAX_NAME_LENGTH 50
+#define FILE_NAME "cart.txt"
 
 typedef struct 
 {
@@ -19,7 +20,10 @@ void displayMenu()
     printf("2. View Cart\n");
     printf("3. Update Cart\n");
     printf("4. Generate Bill\n");
-    printf("5. Exit\n");
+    printf("5. Save Cart to File\n");
+    printf("6. Load Cart from File\n");
+    printf("7. Search Item in Cart\n");
+    printf("8. Exit\n");
     printf("========================\n");
 }
 
@@ -37,7 +41,8 @@ void viewCart(Item *cart[], int numItems)
         return;
     }
     printf("\n======= Cart =======\n");
-    for(int i = 0; i < numItems; i++) {
+    for(int i = 0; i < numItems; i++) 
+{
         printf("%d. %s - $%.2f x %d\n", i + 1, cart[i]->name, cart[i]->price, cart[i]->quantity);
     }
     printf("====================\n");
@@ -45,7 +50,8 @@ void viewCart(Item *cart[], int numItems)
 
 void updateCart(Item *cart[], int numItems) 
 {
-    if (numItems == 0) {
+    if (numItems == 0) 
+{
         printf("Cart is empty.\n");
         return;
     }
@@ -53,7 +59,8 @@ void updateCart(Item *cart[], int numItems)
     viewCart(cart, numItems);
     printf("Enter the item number you want to update: ");
     scanf("%d", &choice);
-    if (choice < 1 || choice > numItems) {
+    if (choice < 1 || choice > numItems) 
+{
         printf("Invalid item number.\n");
         return;
     }
@@ -67,7 +74,7 @@ float calculateBill(Item *cart[], int numItems)
     float total = 0.0;
     printf("\n======= Bill Details =======\n");
     for (int i = 0; i < numItems; i++) 
-	{
+    {
         float subtotal = cart[i]->price * cart[i]->quantity;
         printf("%d. %s - $%.2f x %d = $%.2f\n", i + 1, cart[i]->name, cart[i]->price, cart[i]->quantity, subtotal);
         total += subtotal;
@@ -76,32 +83,119 @@ float calculateBill(Item *cart[], int numItems)
     return total;
 }
 
+void saveCartToFile(Item *cart[], int numItems)
+{
+    FILE *file = fopen(FILE_NAME, "w");
+    if (file == NULL) {
+        printf("Failed to open file for writing.\n");
+        return;
+    }
+    for (int i = 0; i < numItems; i++) 
+{
+        fprintf(file, "%s %f %d\n", cart[i]->name, cart[i]->price, cart[i]->quantity);
+    }
+    fclose(file);
+    printf("Cart saved to file.\n");
+}
+
+void loadCartFromFile(Item *cart[], int *numItems)
+{
+    FILE *file = fopen(FILE_NAME, "r");
+    if (file == NULL) 
+{
+        printf("Failed to open file for reading.\n");
+        return;
+    }
+    *numItems = 0;
+    while (!feof(file) && *numItems < MAX_ITEMS) 
+{
+        Item *newItem = malloc(sizeof(Item));
+        if (newItem == NULL) 
+{
+            printf("Memory allocation failed. Exiting...\n");
+            fclose(file);
+            return;
+        }
+        newItem->name = malloc(MAX_NAME_LENGTH * sizeof(char));
+        if (newItem->name == NULL) 
+{
+            printf("Memory allocation failed. Exiting...\n");
+            free(newItem);
+            fclose(file);
+            return;
+        }
+        if (fscanf(file, "%s %f %d", newItem->name, &newItem->price, &newItem->quantity) == 3) 
+{
+            cart[*numItems] = newItem;
+            (*numItems)++;
+        } else 
+{
+            free(newItem->name);
+            free(newItem);
+        }
+    }
+    fclose(file);
+    printf("Cart loaded from file.\n");
+}
+
+void searchItemInCart(Item *cart[], int numItems)
+{
+    if (numItems == 0) 
+{
+        printf("Cart is empty.\n");
+        return;
+    }
+    char searchName[MAX_NAME_LENGTH];
+    printf("Enter the name of the item to search: ");
+    scanf("%s", searchName);
+    printf("\n======= Search Results =======\n");
+    int found = 0;
+    for (int i = 0; i < numItems; i++) 
+{
+        if (strcmp(cart[i]->name, searchName) == 0) 
+{
+            printf("%d. %s - $%.2f x %d\n", i + 1, cart[i]->name, cart[i]->price, cart[i]->quantity);
+            found = 1;
+        }
+    }
+    if (!found) 
+{
+        printf("Item not found in cart.\n");
+    }
+    printf("=============================\n");
+}
+
 int main() 
 {
-    Item *cart = malloc(MAX_ITEMS * sizeof(Item));
-    if (cart == NULL) {
+    Item **cart = malloc(MAX_ITEMS * sizeof(Item*));
+    if (cart == NULL) 
+{
         printf("Memory allocation failed. Exiting...\n");
         return 1;
     }
-    
+
     int numItems = 0;
     int choice;
     float totalBill;
 
-    do {
+    do 
+{
         displayMenu();
         printf("Enter your choice: ");
         scanf("%d", &choice);
 
-        switch (choice) {
+        switch (choice) 
+{
             case 1: {
                 Item *newItem = malloc(sizeof(Item));
-                if (newItem == NULL) {
+                if (newItem == NULL) 
+{
                     printf("Memory allocation failed. Exiting...\n");
                     return 1;
                 }
                 newItem->name = malloc(MAX_NAME_LENGTH * sizeof(char));
-                if (newItem->name == NULL) {
+                if (newItem->name == NULL) 
+{
                     printf("Memory allocation failed. Exiting...\n");
                     free(newItem);
                     return 1;
@@ -126,16 +220,26 @@ int main()
                 printf("Total bill: $%.2f\n", totalBill);
                 break;
             case 5:
+                saveCartToFile(cart, numItems);
+                break;
+            case 6:
+                loadCartFromFile(cart, &numItems);
+                break;
+            case 7:
+                searchItemInCart(cart, numItems);
+                break;
+            case 8:
                 printf("Thank you for shopping with us!\n");
                 break;
             default:
                 printf("Invalid choice. Please try again.\n");
         }
-    } while (choice != 5);
+    } while (choice != 8);
 
-    for (Item **ptr = cart; ptr < cart + numItems; ++ptr) {
-        free((*ptr)->name);
-        free(*ptr);
+    for (int i = 0; i < numItems; i++) 
+{
+        free(cart[i]->name);
+        free(cart[i]);
     }
     free(cart);
 
@@ -143,8 +247,5 @@ int main()
 }
 
 
-
-
-
     
-               
+             
