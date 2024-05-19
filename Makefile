@@ -1,20 +1,30 @@
+# Makefile for the shopping cart application
+
+
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror
-LDFLAGS = 
 
-SRCS = main.c item.c
-OBJS = $(SRCS:.c=.o)
-TARGET = shopping_app
 
-.PHONY: all clean
+CFLAGS = -Wall -Wextra -pedantic -std=c99
 
-all: $(TARGET)
+SRC = main.c
 
-$(TARGET): $(OBJS)
-    $(CC) $(LDFLAGS) -o $@ $^
 
-%.o: %.c
-    $(CC) $(CFLAGS) -c -o $@ $<
+OUT = shopping_cart
+
+
+all: $(OUT)
+
+
+$(OUT): $(SRC)
+	$(CC) $(CFLAGS) -o $(OUT) $(SRC)
+
 
 clean:
-    $(RM) $(TARGET) $(OBJS)
+	rm -f $(OUT)
+
+
+run: $(OUT)
+	./$(OUT)
+
+# Phony targets
+.PHONY: all clean run
